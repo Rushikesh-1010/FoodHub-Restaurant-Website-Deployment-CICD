@@ -1,0 +1,48 @@
+pipeline {
+
+agent any
+
+stages {
+
+stage('Clone'){
+steps{
+git 'https://github.com/Rushikesh-1010/FoodHub-Restaurant-Website-Deployment-CICD.git'
+}
+}
+
+
+stage('Deploy'){
+steps{
+
+sshagent(['node-pipeline-key-node.js']) {
+
+sh '''
+ssh ubuntu@172.31.15.141 "
+rm -rf /var/www/html/foodhub/*
+"
+
+scp -r * ubuntu@172.31.15.141:/var/www/html/foodhub/
+
+'''
+
+}
+
+}
+
+}
+
+
+stage('Restart nginx'){
+steps{
+
+sh '''
+ssh ubuntu@172.31.15.141 "sudo systemctl restart nginx"
+'''
+
+}
+
+}
+
+}
+
+}
