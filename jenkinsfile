@@ -21,13 +21,11 @@ pipeline {
                 sshagent(['node-pipeline-key-node.js']) {
 
                     sh '''
-                    
                     ssh ubuntu@172.31.15.141 "
                     sudo rm -rf /var/www/html/foodhub/*
                     "
 
                     scp -r * ubuntu@172.31.15.141:/var/www/html/foodhub/
-
                     '''
 
                 }
@@ -41,13 +39,15 @@ pipeline {
 
             steps {
 
-                sh '''
-                
-                ssh ubuntu@172.31.15.141 "
-                sudo systemctl restart nginx
-                "
+                sshagent(['node-pipeline-key-node.js']) {
 
-                '''
+                    sh '''
+                    ssh ubuntu@172.31.15.141 "
+                    sudo systemctl restart nginx
+                    "
+                    '''
+
+                }
 
             }
 
@@ -58,13 +58,15 @@ pipeline {
 
             steps {
 
-                sh '''
+                sshagent(['node-pipeline-key-node.js']) {
 
-                ssh ubuntu@172.31.15.141 "
-                ls -la /var/www/html/foodhub
-                "
+                    sh '''
+                    ssh ubuntu@172.31.15.141 "
+                    ls -la /var/www/html/foodhub
+                    "
+                    '''
 
-                '''
+                }
 
             }
 
@@ -76,16 +78,11 @@ pipeline {
     post {
 
         success {
-
-            echo 'FoodHub Deployment Successful'
-
+            echo "FoodHub Deployment Successful"
         }
 
-
         failure {
-
-            echo 'FoodHub Deployment Failed'
-
+            echo "FoodHub Deployment Failed"
         }
 
     }
