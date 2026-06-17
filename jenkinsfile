@@ -1,48 +1,93 @@
 pipeline {
 
-agent any
+    agent any
 
-stages {
+    stages {
 
-stage('Clone'){
-steps{
-git 'https://github.com/Rushikesh-1010/FoodHub-Restaurant-Website-Deployment-CICD.git'
-}
-}
+        stage('Clone FoodHub Code') {
+            steps {
 
+                git branch: 'main',
+                url: 'https://github.com/Rushikesh-1010/FoodHub-Restaurant-Website-Deployment-CICD.git'
 
-stage('Deploy'){
-steps{
-
-sshagent(['node-pipeline-key-node.js']) {
-
-sh '''
-ssh ubuntu@172.31.15.141 "
-rm -rf /var/www/html/foodhub/*
-"
-
-scp -r * ubuntu@172.31.15.141:/var/www/html/foodhub/
-
-'''
-
-}
-
-}
-
-}
+            }
+        }
 
 
-stage('Restart nginx'){
-steps{
+        stage('Deploy to Target Server') {
 
-sh '''
-ssh ubuntu@172.31.15.141 "sudo systemctl restart nginx"
-'''
+            steps {
 
-}
+                sshagent(['node-pipeline-key-node.js']) {
 
-}
+                    sh '''
+                    
+                    ssh ubuntu@172.31.15.141 "
+                    sudo rm -rf /var/www/html/foodhub/*
+                    "
 
-}
+                    scp -r * ubuntu@172.31.15.141:/var/www/html/foodhub/
+
+                    '''
+
+                }
+
+            }
+
+        }
+
+
+        stage('Restart Nginx') {
+
+            steps {
+
+                sh '''
+                
+                ssh ubuntu@172.31.15.141 "
+                sudo systemctl restart nginx
+                "
+
+                '''
+
+            }
+
+        }
+
+
+        stage('Verify Deployment') {
+
+            steps {
+
+                sh '''
+
+                ssh ubuntu@172.31.15.141 "
+                ls -la /var/www/html/foodhub
+                "
+
+                '''
+
+            }
+
+        }
+
+    }
+
+
+    post {
+
+        success {
+
+            echo 'FoodHub Deployment Successful'
+
+        }
+
+
+        failure {
+
+            echo 'FoodHub Deployment Failed'
+
+        }
+
+    }
 
 }
